@@ -1,5 +1,7 @@
+const { INTERVAL_DURATION_IN_MS } = require("../util/config");
 const { errLog } = require("../util/debug");
 const { pQuery } = require("../util/postgres");
+const { randomInterval } = require("../util/randomInterval");
 
 async function removeFromPostgres() {
   try {
@@ -16,7 +18,7 @@ DELETE FROM product WHERE idx IN(
   } catch (err) {
     errLog(`removeFromPostgresErr:${err.message}`);
   } finally {
-    setTimeout(removeFromPostgres, 1000);
+    setTimeout(removeFromPostgres, randomInterval(INTERVAL_DURATION_IN_MS));
   }
 }
 

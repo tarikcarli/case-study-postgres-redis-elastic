@@ -1,6 +1,8 @@
+const { INTERVAL_DURATION_IN_MS } = require("../util/config");
 const { errLog } = require("../util/debug");
 const { deleteElastic } = require("../util/elastic");
 const { pQuery } = require("../util/postgres");
+const { randomInterval } = require("../util/randomInterval");
 
 async function removeFromElastic() {
   try {
@@ -30,7 +32,7 @@ async function removeFromElastic() {
   } catch (err) {
     errLog(`removeFromElasticErr:${err.message}`);
   } finally {
-    setTimeout(removeFromElastic, 1000);
+    setTimeout(removeFromElastic, randomInterval(INTERVAL_DURATION_IN_MS));
   }
 }
 
