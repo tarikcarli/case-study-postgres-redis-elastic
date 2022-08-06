@@ -22,3 +22,11 @@ docker run --name redis --restart always -d -p 6379:6379 redis:6.2.7
 
 ### Docker elasticsearch
 docker run --name elasticsearch -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:8.3.3
+
+
+### How to run
+- docker-compose up --build
+- application run port 4000 on localhost
+
+### How to stop and clean resources
+- docker-compose down -v --remove-orphans
