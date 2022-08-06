@@ -1,0 +1,31 @@
+{
+  "name": "pi_case",
+  "version": "1.0.0",
+  "engines": {
+    "node": "v16.14.2",
+    "npm": "8.5.0"
+  },
+  "description": "Bu projede, ürün ve kategori ekleme, silme, güncelleme ve listeleme ve arama servislerinin olacağı bir API kaynağı yazılmasını beklemekteyiz. Projeyi değerlendirirken şunları göz önünde bulunduracağız; ● Ürün bilgileri bir veri tabanına aktarılmakla birlikte, ürün ve kategori listesini Redis üzerinden alınız. ● Bir arama yapılacaksa Elasticsearch üzerinden arama yapılmasını beklemekteyiz. ● Uygulama NodeJs-TypeScript ile geliştirilmelidir. ● Docker Image hazırlanması istenmektedir. ● Servislerin Docker Compose ile build alınıp çalıştırılabiliyor olması beklenmektedir.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon -r dotenv/config src/www.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.2.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-async-errors": "^3.1.1",
+    "i": "^0.3.7",
+    "npm": "^8.16.0",
+    "pg": "^8.7.3",
+    "pg-format": "^1.0.4",
+    "redis": "^4.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
