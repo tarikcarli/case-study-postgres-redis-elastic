@@ -7,9 +7,7 @@ let elastic;
 function connectElastic(tryCount = 1) {
   try {
     elastic = new Client({
-      nodes: ["https://localhost:9200"],
-      tls: { rejectUnauthorized: false },
-      auth: { username: "tc", password: "123qwe" },
+      nodes: ["http://localhost:9200"],
     });
   } catch (err) {
     errLog(`connectElasticErr: ${err.message} ${tryCount}`);

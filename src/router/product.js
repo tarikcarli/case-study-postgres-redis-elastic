@@ -47,6 +47,7 @@ async function addProduct(req, res) {
 async function updateProduct(req, res) {
   const { idx, name, categoryIdx } = req.body;
   await pQuery({ sql: "UPDATE product SET category_idx=$1, name = $2 WHERE idx = $3", parameters: [categoryIdx, name, idx] });
+  await pQuery({ sql: "INSERT INTO product_updated_idx(product_idx) VALUES($1);", parameters: [idx] });
   const keys = await getKeyRedis("product:*");
   await Promise.allSettled(
     keys.map(async (key) => {

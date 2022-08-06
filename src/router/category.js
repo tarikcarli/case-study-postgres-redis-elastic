@@ -47,6 +47,7 @@ async function addCategory(req, res) {
 async function updateCategory(req, res) {
   const { idx, name } = req.body;
   await pQuery({ sql: "UPDATE category SET name = $1 WHERE idx = $2", parameters: [name, idx] });
+  await pQuery({ sql: "INSERT INTO category_updated_idx(category_idx) VALUES($1);", parameters: [idx] });
   const keys = await getKeyRedis("category:*");
   await Promise.allSettled(
     keys.map(async (key) => {

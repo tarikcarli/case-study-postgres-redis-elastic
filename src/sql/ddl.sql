@@ -21,3 +21,17 @@ CREATE TABLE product(
 );
 CREATE INDEX ON product(elastic_idx);
 CREATE INDEX ON product(deletion_time);
+
+CREATE TABLE product_updated_idx(
+	idx serial PRIMARY KEY,
+	product_idx int4,
+	FOREIGN KEY(product_idx) 
+   	REFERENCES product(idx)
+);
+
+CREATE TABLE category_updated_idx(
+	idx serial PRIMARY KEY,
+	category_idx int4,
+	FOREIGN KEY(category_idx) 
+   	REFERENCES category(idx)
+);
