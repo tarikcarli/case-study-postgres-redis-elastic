@@ -23,7 +23,7 @@ async function connectRedis(tryCount = 1) {
 
 /** @type {() => Promise<void>} */
 async function disconnectRedis() {
-  await client.disconnect();
+  await client.quit();
 }
 
 /** @type {(key:string,value:string) => Promise<string>} */
