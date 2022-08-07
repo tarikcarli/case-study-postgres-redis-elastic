@@ -30,3 +30,6 @@ docker run --name elasticsearch -d -p 9200:9200 -p 9300:9300 -e "discovery.type=
 
 ### How to stop and clean resources
 - docker-compose down -v --remove-orphans
+
+### Prerequisite
+- docker with version Docker version 20.10.17, build 100c701
