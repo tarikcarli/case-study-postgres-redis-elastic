@@ -13,7 +13,7 @@ async function listCategory(req, res) {
     await Promise.all([
       (async () => {
         const { rows } = await pQuery({
-          sql: "SELECT * FROM category WHERE deletion_time IS NULL LIMIT $1 OFFSET $2;",
+          sql: "SELECT * FROM category WHERE deletion_time IS NULL ORDER BY idx LIMIT $1 OFFSET $2;",
           parameters: [limit, offset],
         });
         list = rows;
@@ -25,7 +25,7 @@ async function listCategory(req, res) {
         count = pcount;
       })(),
     ]);
-    addRedis(`category:${limit}:${offset}`, JSON.stringify(count, list));
+    addRedis(`category:${limit}:${offset}`, JSON.stringify({count, list}));
   }
   sendResponse({ req, res, responseData: redisResult == null ? { count, list } : redisResult });
 }

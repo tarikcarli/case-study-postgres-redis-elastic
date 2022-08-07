@@ -17,6 +17,8 @@ const config = {
   ELASTIC_HOST: process.env.ELASTIC_HOST,
   ELASTIC_PORT: process.env.ELASTIC_PORT,
   INTERVAL_DURATION_IN_MS: process.env.INTERVAL_DURATION_IN_MS,
+  LOAD_FAKE_DATA: process.env.LOAD_FAKE_DATA,
+  DEBUG: process.env.DEBUG,
 };
 infoLog("%o", config);
 

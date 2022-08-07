@@ -5,13 +5,15 @@ const { connectElastic } = require("./util/elastic");
 require("express-async-errors");
 const { sendResponse } = require("./util/sendResponse");
 const { interval } = require("./interval/interval");
+const { faker } = require("./faker");
+const { LOAD_FAKE_DATA } = require("./util/config");
 const app = express();
 
 connectPostgres();
 connectRedis();
 connectElastic();
 interval();
-
+LOAD_FAKE_DATA === "true" && setTimeout(faker, 10000);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "5mb" }));
 
