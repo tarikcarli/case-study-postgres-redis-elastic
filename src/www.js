@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 const http = require("http");
+const events = require("events");
 const { app } = require("./app");
 const { errLog, infoLog } = require("./util/debug");
-
+events.setMaxListeners(1000);
 const server = http.createServer(app);
 
 const port = parseInt(process.env.APP_PORT || "4000");

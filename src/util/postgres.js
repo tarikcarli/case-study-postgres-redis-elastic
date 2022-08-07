@@ -21,6 +21,7 @@ async function connectPostgres(tryCount = 0) {
       pgLog(`psClientErr: ${err.message}`);
     });
     pool.on("connect", (client) => {
+      pgLog(`pool connect another client`);
       client.on("notice", (payload) => pgLog(`notice: ${payload.message}`));
     });
     (await pool.connect()).release();
@@ -33,7 +34,7 @@ async function connectPostgres(tryCount = 0) {
     }
   }
 }
- 
+
 async function disconnectPostgres() {
   pgLog("disconnectPostgres");
   try {
