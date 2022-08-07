@@ -11,8 +11,6 @@ async function connectElastic(tryCount = 1) {
       nodes: [`http://${ELASTIC_HOST}:${ELASTIC_PORT}`],
     });
     await elastic.ping();
-    await elastic.indices.create({ index: "category" });
-    await elastic.indices.create({ index: "product" });
   } catch (err) {
     errLog(`connectElasticErr: ${err.message} ${tryCount}`);
     if (tryCount === 10) {
