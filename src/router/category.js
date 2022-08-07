@@ -59,9 +59,9 @@ async function deleteCategory(req, res) {
 async function searchCategory(req, res) {
   const { name, limit = 10, offset = 0 } = req.query;
   if (typeof name !== "string") throw new Error(`unsupported type name: ${typeof name}`);
-  const elasticIdxes = await searchElastic("category", name, limit, offset);
+  const { count, list: elasticIdxes } = await searchElastic("category", name, limit, offset);
   const { rows } = await pQuery({ sql: "SELECT * FROM category where elastic_idx = ANY($1)", parameters: [elasticIdxes] });
-  sendResponse({ req, res, responseData: rows });
+  sendResponse({ req, res, responseData: { count, list: rows } });
 }
 
 module.exports = {

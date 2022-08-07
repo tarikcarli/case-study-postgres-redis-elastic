@@ -42,13 +42,30 @@ async function deleteElastic(index, id) {
   return _id;
 }
 
-/** @type {(index:string, name:string) => Promise<string[]>} */
+/** @type {(index:string, name:string) => Promise<{count:number,list:string[]}>} */
 async function searchElastic(index, name, limit = 10, offset = 0) {
-  const res = await elastic.search({
-    index,
-    query: { fuzzy: { name } },
-  });
-  return res.hits.hits.slice(offset, limit).map((e) => e._id);
+  let count;
+  let list;
+  await Promise.all([
+    (async () => {
+      const res = await elastic.count({
+        index,
+        query: { fuzzy: { name } },
+      });
+      count = res.count;
+    })(),
+    (async () => {
+      const res = await elastic.search({
+        index,
+        from: offset,
+        size: limit,
+        query: { fuzzy: { name } },
+      });
+      list = res.hits.hits.map((e) => e._id);
+    })(),
+  ]);
+
+  return { count, list };
 }
 
 module.exports = { connectElastic, disconnectElastic, addElastic, deleteElastic, searchElastic };

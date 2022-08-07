@@ -59,9 +59,9 @@ async function deleteProduct(req, res) {
 async function searchProduct(req, res) {
   const { name, limit = 10, offset = 0 } = req.query;
   if (typeof name !== "string") throw new Error(`unsupported type name: ${typeof name}`);
-  const elasticIdxes = await searchElastic("product", name, limit, offset);
+  const { count, list: elasticIdxes } = await searchElastic("product", name, limit, offset);
   const { rows } = await pQuery({ sql: "SELECT * FROM product where elastic_idx = ANY($1)", parameters: [elasticIdxes] });
-  sendResponse({ req, res, responseData: rows });
+  sendResponse({ req, res, responseData: { count, list: rows } });
 }
 
 module.exports = {
