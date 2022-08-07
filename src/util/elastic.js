@@ -1,4 +1,5 @@
 const { Client } = require("@elastic/elasticsearch");
+const { ELASTIC_HOST, ELASTIC_PORT } = require("./config");
 const { errLog } = require("./debug");
 
 /** @type {import("@elastic/elasticsearch").Client} */
@@ -7,7 +8,7 @@ let elastic;
 function connectElastic(tryCount = 1) {
   try {
     elastic = new Client({
-      nodes: ["http://localhost:9200"],
+      nodes: [`http://${ELASTIC_HOST}:${ELASTIC_PORT}`],
     });
   } catch (err) {
     errLog(`connectElasticErr: ${err.message} ${tryCount}`);

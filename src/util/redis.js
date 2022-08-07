@@ -1,24 +1,14 @@
 const { createClient } = require("redis");
+const { REDIS_HOST, REDIS_PORT } = require("./config");
 const { errLog } = require("./debug");
 
 /** @type {import("redis").RedisClientType} */
 let client;
 
-// (async () => {
-//   await connectRedis();
-//   let res;
-//   res = await addRedis("tarik", "carli");
-//   console.log(res);
-//   res = await getRedis("tarik");
-//   console.log(res);
-//   res = await deleteRedis("tarik");
-//   console.log(res, typeof res);
-// })();
-
 /** @type {() => Promise<void>} */
 async function connectRedis(tryCount = 1) {
   try {
-    client = createClient();
+    client = createClient({ url: `redis://${REDIS_HOST}:${REDIS_PORT}/` });
     await client.connect();
     client.on("error", (err) => console.log("Redis Client Error", err));
   } catch (err) {

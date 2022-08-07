@@ -15,7 +15,7 @@ async function connectPostgres(tryCount = 0) {
       user: DB_USERNAME,
       database: DB_DATABASE,
       port: Number(DB_PORT),
-      application_name: "grid",
+      application_name: "cs",
     });
     pool.on("error", (err) => {
       pgLog(`psClientErr: ${err.message}`);
