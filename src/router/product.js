@@ -1,6 +1,6 @@
 const { searchElastic } = require("../util/elastic");
 const { pQuery } = require("../util/postgres");
-const { getRedis, addRedis, getKeyRedis, deleteRedis } = require("../util/redis");
+const { getRedis, addRedis, deleteRedisByPattern } = require("../util/redis");
 const { sendResponse } = require("../util/sendResponse");
 
 /** @type {import("express").Handler} */
@@ -25,7 +25,7 @@ async function listProduct(req, res) {
         count = pcount;
       })(),
     ]);
-    addRedis(`product:${limit}:${offset}`, JSON.stringify({count, list}));
+    addRedis(`product:${limit}:${offset}`, JSON.stringify({ count, list }));
   }
   sendResponse({ req, res, responseData: redisResult == null ? { count, list } : redisResult });
 }
@@ -34,12 +34,7 @@ async function listProduct(req, res) {
 async function addProduct(req, res) {
   const { categoryIdx, name } = req.body;
   await pQuery({ sql: "INSERT INTO product(category_idx,name) VALUES ($1,$2);", parameters: [categoryIdx, name] });
-  const keys = await getKeyRedis("product:*");
-  await Promise.allSettled(
-    keys.map(async (key) => {
-      await deleteRedis(key);
-    })
-  );
+  await deleteRedisByPattern("product:*");
   sendResponse({ req, res });
 }
 
@@ -48,12 +43,7 @@ async function updateProduct(req, res) {
   const { idx, name, categoryIdx } = req.body;
   await pQuery({ sql: "UPDATE product SET category_idx=$1, name = $2 WHERE idx = $3", parameters: [categoryIdx, name, idx] });
   await pQuery({ sql: "INSERT INTO product_updated_idx(product_idx) VALUES($1);", parameters: [idx] });
-  const keys = await getKeyRedis("product:*");
-  await Promise.allSettled(
-    keys.map(async (key) => {
-      await deleteRedis(key);
-    })
-  );
+  await deleteRedisByPattern("product:*");
   sendResponse({ req, res });
 }
 
@@ -61,12 +51,7 @@ async function updateProduct(req, res) {
 async function deleteProduct(req, res) {
   const { idx } = req.query;
   await pQuery({ sql: "UPDATE product SET deletion_time=now() WHERE idx=$1;", parameters: [idx] });
-  const keys = await getKeyRedis("product:*");
-  await Promise.allSettled(
-    keys.map(async (key) => {
-      await deleteRedis(key);
-    })
-  );
+  await deleteRedisByPattern("product:*");
   sendResponse({ req, res });
 }
 

@@ -1,4 +1,4 @@
-const { getRedis, addRedis, getKeyRedis, deleteRedis } = require("../util/redis");
+const { getRedis, addRedis, deleteRedisByPattern } = require("../util/redis");
 const { searchElastic } = require("../util/elastic");
 const { pQuery } = require("../util/postgres");
 const { sendResponse } = require("../util/sendResponse");
@@ -25,7 +25,7 @@ async function listCategory(req, res) {
         count = pcount;
       })(),
     ]);
-    addRedis(`category:${limit}:${offset}`, JSON.stringify({count, list}));
+    addRedis(`category:${limit}:${offset}`, JSON.stringify({ count, list }));
   }
   sendResponse({ req, res, responseData: redisResult == null ? { count, list } : redisResult });
 }
@@ -34,12 +34,7 @@ async function listCategory(req, res) {
 async function addCategory(req, res) {
   const { name } = req.body;
   await pQuery({ sql: "INSERT INTO category(name) VALUES ($1);", parameters: [name] });
-  const keys = await getKeyRedis("category:*");
-  await Promise.allSettled(
-    keys.map(async (key) => {
-      await deleteRedis(key);
-    })
-  );
+  await deleteRedisByPattern("category:*");
   sendResponse({ req, res });
 }
 
@@ -48,12 +43,7 @@ async function updateCategory(req, res) {
   const { idx, name } = req.body;
   await pQuery({ sql: "UPDATE category SET name = $1 WHERE idx = $2", parameters: [name, idx] });
   await pQuery({ sql: "INSERT INTO category_updated_idx(category_idx) VALUES($1);", parameters: [idx] });
-  const keys = await getKeyRedis("category:*");
-  await Promise.allSettled(
-    keys.map(async (key) => {
-      await deleteRedis(key);
-    })
-  );
+  await deleteRedisByPattern("category:*");
   sendResponse({ req, res });
 }
 
@@ -61,12 +51,7 @@ async function updateCategory(req, res) {
 async function deleteCategory(req, res) {
   const { idx } = req.query;
   await pQuery({ sql: "UPDATE category SET deletion_time=now() WHERE idx=$1;", parameters: [idx] });
-  const keys = await getKeyRedis("category:*");
-  await Promise.allSettled(
-    keys.map(async (key) => {
-      await deleteRedis(key);
-    })
-  );
+  await deleteRedisByPattern("category:*");
   sendResponse({ req, res });
 }
 

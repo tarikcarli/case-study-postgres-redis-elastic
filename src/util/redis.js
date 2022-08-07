@@ -48,10 +48,9 @@ async function deleteRedis(key) {
   return res;
 }
 
-/** @type {(keyPattern:string) => Promise<string[]>} */
-async function getKeyRedis(keyPattern) {
-  const res = await client.keys(keyPattern);
-  return res;
+/** @type {(keyPattern:string) => Promise<void>} */
+async function deleteRedisByPattern(keyPattern) {
+  await client.eval(`for _,k in ipairs(redis.call('keys','${keyPattern}')) do redis.call('del',k) end`);
 }
 module.exports = {
   connectRedis,
@@ -59,5 +58,5 @@ module.exports = {
   addRedis,
   getRedis,
   deleteRedis,
-  getKeyRedis,
+  deleteRedisByPattern,
 };
