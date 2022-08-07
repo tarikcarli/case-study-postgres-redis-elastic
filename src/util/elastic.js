@@ -5,11 +5,14 @@ const { errLog } = require("./debug");
 /** @type {import("@elastic/elasticsearch").Client} */
 let elastic;
 
-function connectElastic(tryCount = 1) {
+async function connectElastic(tryCount = 1) {
   try {
     elastic = new Client({
       nodes: [`http://${ELASTIC_HOST}:${ELASTIC_PORT}`],
     });
+    await elastic.ping();
+    await elastic.indices.create({ index: "category" });
+    await elastic.indices.create({ index: "product" });
   } catch (err) {
     errLog(`connectElasticErr: ${err.message} ${tryCount}`);
     if (tryCount === 10) {
