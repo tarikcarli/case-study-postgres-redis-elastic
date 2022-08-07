@@ -1,0 +1,46 @@
+ab -p post_product.json -T application/json -n 10000 -c 100 http://localhost:4000/api/product > ~/ab_cs_test_result_post
+This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+
+
+Server Software:        
+Server Hostname:        localhost
+Server Port:            4000
+
+Document Path:          /api/product
+Document Length:        2 bytes
+
+Concurrency Level:      100
+Time taken for tests:   8.678 seconds
+Complete requests:      10000
+Failed requests:        0
+Total transferred:      2070000 bytes
+Total body sent:        2010000
+HTML transferred:       20000 bytes
+Requests per second:    1152.31 [#/sec] (mean)
+Time per request:       86.782 [ms] (mean)
+Time per request:       0.868 [ms] (mean, across all concurrent requests)
+Transfer rate:          232.94 [Kbytes/sec] received
+                        226.19 kb/s sent
+                        459.12 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.2      0       2
+Processing:     5   86 112.4     56     792
+Waiting:        2   77 111.5     48     790
+Total:          5   87 112.4     56     792
+
+Percentage of the requests served within a certain time (ms)
+  50%     56
+  66%     58
+  75%     61
+  80%     63
+  90%    129
+  95%    254
+  98%    623
+  99%    722
+ 100%    792 (longest request)
