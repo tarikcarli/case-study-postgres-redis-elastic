@@ -1,6 +1,6 @@
 const { INTERVAL_DURATION_IN_MS } = require("../util/config");
 const { errLog, infoLog } = require("../util/debug");
-const { deleteElastic, addElastic } = require("../util/elastic");
+const { updateElastic } = require("../util/elastic");
 const { pQuery } = require("../util/postgres");
 const { randomInterval } = require("../util/randomInterval");
 
@@ -13,9 +13,7 @@ async function updateToElastic() {
       infoLog(rows);
       await Promise.allSettled(
         rows.map(async (row) => {
-          await deleteElastic("category", row.elastic_idx);
-          const id = await addElastic("category", { name: row.name });
-          await pQuery({ sql: "UPDATE category SET elastic_idx=$1 WHERE idx =$2", parameters: [id, row.idx] });
+          updateElastic("category", row.elastic_idx, { name: row.name });
           await pQuery({ sql: "DELETE FROM category_updated_idx WHERE idx = $1", parameters: [row.job_idx] });
         })
       );
@@ -26,9 +24,7 @@ async function updateToElastic() {
       });
       await Promise.allSettled(
         rows.map(async (row) => {
-          await deleteElastic("product", row.elastic_idx);
-          const id = await addElastic("product", { name: row.name });
-          await pQuery({ sql: "UPDATE product SET elastic_idx=$1 WHERE idx =$2", parameters: [id, row.idx] });
+          updateElastic("product", row.elastic_idx, { name: row.name });
           await pQuery({ sql: "DELETE FROM product_updated_idx WHERE idx = $1", parameters: [row.job_idx] });
         })
       );

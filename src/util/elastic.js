@@ -32,6 +32,14 @@ async function addElastic(index, document) {
   }
   return _id;
 }
+/** @type {(index:string, id:string,doc:object) => Promise<string>} */
+async function updateElastic(index, id, doc) {
+  const { _id, result } = await elastic.update({ index, id, doc });
+  if (result !== "updated") {
+    throw new Error(`unsuccessful result:${result}`);
+  }
+  return _id;
+}
 
 /** @type {(index:string, id:string) => Promise<string>} */
 async function deleteElastic(index, id) {
@@ -65,7 +73,8 @@ async function searchElastic(index, name, limit = 10, offset = 0) {
     })(),
   ]);
 
+  // @ts-ignore
   return { count, list };
 }
 
-module.exports = { connectElastic, disconnectElastic, addElastic, deleteElastic, searchElastic };
+module.exports = { connectElastic, disconnectElastic, addElastic, updateElastic, deleteElastic, searchElastic };
