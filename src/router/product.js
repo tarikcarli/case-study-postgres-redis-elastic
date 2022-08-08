@@ -1,3 +1,4 @@
+const { errLog } = require("../util/debug");
 const { searchElastic } = require("../util/elastic");
 const { pQuery } = require("../util/postgres");
 const { getRedis, addRedis, deleteRedisByPattern } = require("../util/redis");
@@ -58,10 +59,39 @@ async function deleteProduct(req, res) {
 /** @type {import("express").Handler} */
 async function searchProduct(req, res) {
   const { name, limit = 10, offset = 0 } = req.query;
+  let count;
+  let list;
   if (typeof name !== "string") throw new Error(`unsupported type name: ${typeof name}`);
-  const { count, list: elasticIdxes } = await searchElastic("product", name, limit, offset);
-  const { rows } = await pQuery({ sql: "SELECT * FROM product where elastic_idx = ANY($1)", parameters: [elasticIdxes] });
-  sendResponse({ req, res, responseData: { count, list: rows } });
+  try {
+    const { count: ecount, list: elasticIdxes } = await searchElastic("product", name, limit, offset);
+    const { rows } = await pQuery({ sql: "SELECT * FROM product where elastic_idx = ANY($1)", parameters: [elasticIdxes] });
+    count = ecount;
+    list = rows;
+  } catch (err) {
+    errLog(`elastic not working err: ${err}`);
+    await Promise.all([
+      (async () => {
+        const { rows } = await pQuery({
+          sql: `
+SELECT * FROM product WHERE name % $1::text AND deletion_time IS NULL
+ORDER BY SIMILARITY(name,$1::text) DESC LIMIT $2 OFFSET $3;`,
+          parameters: [name, limit, offset],
+        });
+        list = rows;
+      })(),
+      (async () => {
+        const {
+          rows: [{ qcount }],
+        } = await pQuery({
+          sql: `
+SELECT count(*) qcount FROM product WHERE name % $1::text AND deletion_time IS NULL`,
+          parameters: [name],
+        });
+        count = qcount;
+      })(),
+    ]);
+  }
+  sendResponse({ req, res, responseData: { count, list } });
 }
 
 module.exports = {

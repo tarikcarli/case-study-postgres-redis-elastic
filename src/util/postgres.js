@@ -5,7 +5,7 @@ const { pgLog, errLog } = require("./debug");
 
 /** @type {import("pg").Pool} */
 let pool;
-
+let postgresIntervalId;
 // @ts-ignore
 async function connectPostgres(tryCount = 0) {
   try {
@@ -24,14 +24,19 @@ async function connectPostgres(tryCount = 0) {
       pgLog(`pool connect another client`);
       client.on("notice", (payload) => pgLog(`notice: ${payload.message}`));
     });
+    clearInterval(postgresIntervalId);
     (await pool.connect()).release();
+    postgresIntervalId = setInterval(async () => {
+      try {
+        await pQuery({ sql: "SELECT 1;" });
+      } catch (err) {
+        errLog(`cannot ping postgres err: ${err.message}`);
+        connectPostgres();
+      }
+    }, 3000);
   } catch (err) {
     errLog(`connectPostgresErr: ${err.message} ${tryCount}`);
-    if (tryCount === 10) {
-      process.exit(1);
-    } else {
-      setTimeout(() => connectPostgres(++tryCount), 3000);
-    }
+    setTimeout(() => connectPostgres(++tryCount), 3000);
   }
 }
 

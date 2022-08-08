@@ -1,3 +1,4 @@
+CREATE EXTENSION pg_trgm;
 CREATE TABLE category(
 	idx serial PRIMARY KEY,
 	elastic_idx TEXT,
@@ -8,6 +9,7 @@ CREATE TABLE category(
 CREATE UNIQUE INDEX ON category("name");
 CREATE INDEX ON category(elastic_idx);
 CREATE INDEX ON category(deletion_time);
+CREATE INDEX ON category USING GIST (name gist_trgm_ops);
 
 CREATE TABLE product(
 	idx serial PRIMARY KEY,
@@ -21,6 +23,7 @@ CREATE TABLE product(
 );
 CREATE INDEX ON product(elastic_idx);
 CREATE INDEX ON product(deletion_time);
+CREATE INDEX ON product USING GIST (name gist_trgm_ops);
 
 CREATE TABLE product_updated_idx(
 	idx serial PRIMARY KEY,

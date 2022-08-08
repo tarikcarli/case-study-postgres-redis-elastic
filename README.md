@@ -33,3 +33,6 @@ docker run --name elasticsearch -d -p 9200:9200 -p 9300:9300 -e "discovery.type=
 
 ### Prerequisite
 - docker with version Docker version 20.10.17, build 100c701
+
+### Features
+- the project's only dependencies is postgresql, app can work without redis and elastic but it perform best performance with them.

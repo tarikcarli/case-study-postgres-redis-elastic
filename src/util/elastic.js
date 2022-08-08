@@ -4,20 +4,25 @@ const { errLog } = require("./debug");
 
 /** @type {import("@elastic/elasticsearch").Client} */
 let elastic;
-
+let elasticIntervalId;
 async function connectElastic(tryCount = 1) {
   try {
     elastic = new Client({
       nodes: [`http://${ELASTIC_HOST}:${ELASTIC_PORT}`],
     });
+    clearInterval(elasticIntervalId);
     await elastic.ping();
+    elasticIntervalId = setInterval(async () => {
+      try {
+        await elastic.ping();
+      } catch (err) {
+        errLog(`cannot ping elastic err: ${err.message}`);
+        connectElastic();
+      }
+    }, 3000);
   } catch (err) {
     errLog(`connectElasticErr: ${err.message} ${tryCount}`);
-    if (tryCount === 10) {
-      process.exit(1);
-    } else {
-      setTimeout(() => connectElastic(++tryCount), 3000);
-    }
+    setTimeout(() => connectElastic(++tryCount), 3000);
   }
 }
 

@@ -4,54 +4,65 @@ const { errLog } = require("./debug");
 
 /** @type {import("redis").RedisClientType} */
 let client;
-
 /** @type {() => Promise<void>} */
 async function connectRedis(tryCount = 1) {
   try {
-    client = createClient({ url: `redis://${REDIS_HOST}:${REDIS_PORT}/` });
+    client = createClient({ url: `redis://${REDIS_HOST}:${REDIS_PORT}/`, disableOfflineQueue: true });
+    client.on("error", (err) => {
+      errLog(`redis error listeners err: ${err.message}`);
+    });
     await client.connect();
-    client.on("error", (err) => console.log("Redis Client Error", err));
   } catch (err) {
     errLog(`connectRedisErr: ${err.message} ${tryCount}`);
-    if (tryCount === 10) {
-      process.exit(1);
-    } else {
-      setTimeout(() => connectRedis(++tryCount), 3000);
-    }
+    setTimeout(() => connectRedis(++tryCount), 3000);
   }
 }
 
 /** @type {() => Promise<void>} */
 async function disconnectRedis() {
-  await client.quit();
+  try {
+    await client.quit();
+  } catch (err) {
+    errLog(`redis can not quit err: ${err.message}`);
+  }
 }
 
-/** @type {(key:string,value:string) => Promise<string>} */
+/** @type {(key:string,value:string) => Promise<void>} */
 async function addRedis(key, value) {
-  const res = await client.set(key, value);
-  if (res !== "OK") {
-    throw new Error(`addRedis unsuccessful response: ${res}`);
+  try {
+    await client.set(key, value);
+  } catch (err) {
+    errLog(`redis not working addRedis err: ${err.message}`);
   }
-  return res;
 }
 /** @type {(key:string) => Promise<string | null>} */
 async function getRedis(key) {
-  const res = await client.get(key);
-  return res;
-}
-/** @type {(key:string) => Promise<number>} */
-async function deleteRedis(key) {
-  const res = await client.del(key);
-  if (!(res === 1 || res === 0)) {
-    throw new Error(`addRedis unsuccessful response: ${res}`);
+  try {
+    const res = await client.get(key);
+    return res;
+  } catch (err) {
+    errLog(`redis not working getRedis err: ${err.message}`);
   }
-  return res;
+  return null;
+}
+/** @type {(key:string) => Promise<void>} */
+async function deleteRedis(key) {
+  try {
+    await client.del(key);
+  } catch (err) {
+    errLog(`redis not working deleteRedis err: ${err.message}`);
+  }
 }
 
 /** @type {(keyPattern:string) => Promise<void>} */
 async function deleteRedisByPattern(keyPattern) {
-  await client.eval(`for _,k in ipairs(redis.call('keys','${keyPattern}')) do redis.call('del',k) end`);
+  try {
+    await client.eval(`for _,k in ipairs(redis.call('keys','${keyPattern}')) do redis.call('del',k) end`);
+  } catch (err) {
+    errLog(`redis not working deleteRedisByPattern err: ${err.message}`);
+  }
 }
+
 module.exports = {
   connectRedis,
   disconnectRedis,
