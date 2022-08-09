@@ -36,3 +36,7 @@ docker run --name elasticsearch -d -p 9200:9200 -p 9300:9300 -e "discovery.type=
 
 ### Features
 - the project's only dependencies is postgresql, app can work without redis and elastic but it perform best performance with them.
+
+### Warnings
+- In high load and incase redis and elastic are down, postgres might be unresponsive, it is your responsiblity to set up postgres cluster and serve high throughput in postgres.
+ 
