@@ -1,13 +1,13 @@
 const { Pool } = require("pg");
 const format = require("pg-format");
-const { DB_HOST, DB_PORT, DB_PASSWORD, DB_USERNAME, DB_DATABASE } = require("./config");
-const { pgLog, errLog } = require("./debug");
+const { DB_HOST, DB_PORT, DB_PASSWORD, DB_USERNAME, DB_DATABASE } = require("../util/config");
+const { pgLog, errLog } = require("../util/debug");
 
 /** @type {import("pg").Pool} */
 let pool;
 let postgresIntervalId;
 // @ts-ignore
-async function connectPostgres(tryCount = 0) {
+async function connectDatabase(tryCount = 0) {
   try {
     pool = new Pool({
       host: DB_HOST,
@@ -18,34 +18,33 @@ async function connectPostgres(tryCount = 0) {
       application_name: "cs",
     });
     pool.on("error", (err) => {
-      pgLog(`psClientErr: ${err.message}`);
+      pgLog(`connectDatabase error listener err: ${err.message}`);
     });
     pool.on("connect", (client) => {
-      pgLog(`pool connect another client`);
-      client.on("notice", (payload) => pgLog(`notice: ${payload.message}`));
+      pgLog(`connectDatabase connect listener call`);
+      client.on("notice", (payload) => pgLog(`connectDatabase notice listener call: ${payload.message}`));
     });
     clearInterval(postgresIntervalId);
     (await pool.connect()).release();
     postgresIntervalId = setInterval(async () => {
       try {
-        await pQuery({ sql: "SELECT 1;" });
+        await queryDatabase({ sql: "SELECT 1;" });
       } catch (err) {
-        errLog(`cannot ping postgres err: ${err.message}`);
-        connectPostgres();
+        errLog(`connectDatabase ping err: ${err.message}`);
+        connectDatabase();
       }
     }, 3000);
   } catch (err) {
-    errLog(`connectPostgresErr: ${err.message} ${tryCount}`);
-    setTimeout(() => connectPostgres(++tryCount), 3000);
+    errLog(`connectDatabase err: ${err.message} ${tryCount}`);
+    setTimeout(() => connectDatabase(++tryCount), 3000);
   }
 }
 
-async function disconnectPostgres() {
-  pgLog("disconnectPostgres");
+async function disconnectDatabase() {
   try {
     await pool.end();
   } catch (err) {
-    pgLog(`disconnectPostgresErr: ${err.message}`);
+    pgLog(`disconnectDatabase err: ${err.message}`);
   }
 }
 
@@ -57,8 +56,8 @@ async function disconnectPostgres() {
  *    parameters?:any[]
  *  }) => Promise<import("pg").QueryResult<any>>}
  */
-async function pQuery({ client, sql, identifiers, parameters }) {
-  pgLog("pQuery %o", { client: !!client, sql, identifiers, parameters });
+async function queryDatabase({ client, sql, identifiers, parameters }) {
+  pgLog("queryDatabase %o", { client: !!client, sql, identifiers, parameters });
   let formattedSql;
   if (identifiers && Array.isArray(identifiers) && identifiers.length > 0) {
     formattedSql = format(sql, ...identifiers);
@@ -82,23 +81,23 @@ async function pQuery({ client, sql, identifiers, parameters }) {
 }
 
 /** @type {(txFunc:(client:import("pg").PoolClient) => Promise<any>) => Promise<any>} */
-async function pQueryTx(txFunc) {
-  pgLog("pQueryTx %o", { txFunc: !!txFunc });
+async function queryTxDatabase(txFunc) {
+  pgLog("queryTxDatabase %o", { txFunc: !!txFunc });
   /** @type {import("pg").PoolClient} */
   let client;
   try {
     client = await pool.connect();
-    await pQuery({ client, sql: "BEGIN;" });
+    await queryDatabase({ client, sql: "BEGIN;" });
     const txResult = await txFunc(client);
-    await pQuery({ client, sql: "COMMIT;" });
+    await queryDatabase({ client, sql: "COMMIT;" });
     return txResult;
   } catch (err) {
     // @ts-ignore
     if (client != null) {
       try {
-        await pQuery({ client, sql: "ROLLBACK;" });
+        await queryDatabase({ client, sql: "ROLLBACK;" });
       } catch (err) {
-        errLog(`pQueryTxCatchErr: ${err.message}`);
+        errLog(`queryTxDatabase err: ${err.message}`);
       }
     }
     throw err;
@@ -111,8 +110,8 @@ async function pQueryTx(txFunc) {
 }
 
 module.exports = {
-  connectPostgres,
-  disconnectPostgres,
-  pQuery,
-  pQueryTx,
+  connectDatabase,
+  disconnectDatabase,
+  queryDatabase,
+  queryTxDatabase,
 };

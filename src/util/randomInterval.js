@@ -1,3 +1,4 @@
+/** @type {(duration: number) => number} */
 function randomInterval(duration) {
   return Math.ceil(Math.random() * (duration * 2));
 }

@@ -1,13 +1,13 @@
-const { addToElastic } = require("./addToElastic");
-const { removeFromElastic } = require("./removeFromElastic");
-const { removeFromPostgres } = require("./removeFromPostgres");
-const { updateToElastic } = require("./updateToElastic");
+const { addToSearchDatabase } = require("./addToSearchDatabase");
+const { removeFromSearchDatabase } = require("./removeFromSearchDatabase");
+const { removeFromDatabase } = require("./removeFromDatabase");
+const { updateToSearchDatabase } = require("./updateToSearchDatabase");
 
 function interval() {
-  addToElastic();
-  removeFromElastic();
-  removeFromPostgres();
-  updateToElastic();
+  addToSearchDatabase();
+  removeFromSearchDatabase();
+  removeFromDatabase();
+  updateToSearchDatabase();
 }
 
 module.exports = {
